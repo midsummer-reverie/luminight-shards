@@ -3,6 +3,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 import CanvasFX from "@/components/CanvasFX";
 import GlobalFX from "@/components/GlobalFX";
+import type { Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   title: "Luminight Shards",

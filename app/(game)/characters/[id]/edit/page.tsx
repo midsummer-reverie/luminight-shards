@@ -62,7 +62,7 @@ async function EditForm({ params }: { params: Promise<{ id: string }> }) {
         <h2>{c.nameJp} <span className="mut">{c.firstName}</span></h2>
       </div>
 
-      <div style={{ display: "grid", gap: "20px", gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))" }}>
+      <div style={{ display: "grid", gap: "20px", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 450px), 1fr))" }}>
         <div className="box">
           <div className="tag">BASIC</div>
           <F label="ชื่อญี่ปุ่น" name="nameJp" def={c.nameJp} max={60} />

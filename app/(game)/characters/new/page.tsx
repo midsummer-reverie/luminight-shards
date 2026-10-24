@@ -51,7 +51,7 @@ async function CreateForm({ searchParams }: { searchParams: Promise<{ type?: str
         <h2>สร้างตัวละครใหม่ <span className="mut">NEW PROFILE</span></h2>
       </div>
 
-      <div style={{ display: "grid", gap: "20px", gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))" }}>
+      <div style={{ display: "grid", gap: "20px", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 450px), 1fr))" }}>
         <div className="box">
           <div className="tag">BASIC</div>
           <F label="ชื่อญี่ปุ่น" name="nameJp" max={60} />

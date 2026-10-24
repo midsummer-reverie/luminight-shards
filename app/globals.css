@@ -1,12 +1,21 @@
 :root{--font-body:"Google Sans","Noto Sans Thai",system-ui,sans-serif;--font-hud:"Chakra Petch","Google Sans","Noto Sans Thai",sans-serif;--font-jp:"Noto Sans JP","Google Sans",sans-serif;--bg:#08050a;--panel:#130c15;--line:#8a3a68;--cy:#ff5fa8;--vi:#c9a3ba;--tx:#f2e3ec;--mut:#a68c9c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg) radial-gradient(circle at 80% -10%,#3a0f2b 0,transparent 45%);color:var(--tx);font:14px/1.6 var(--font-body);min-height:100vh}
+*{box-sizing:border-box}
+
+/* 🟢 FIX 1 & 5: ล็อกหน้าจอไม่ให้ล้นซ้ายขวา และป้องกันการซูมเด้ง */
+html{scroll-padding-top:env(safe-area-inset-top,0px); overflow-x: hidden; touch-action: manipulation;}
+body{margin:0;background:var(--bg) radial-gradient(circle at 80% -10%,#3a0f2b 0,transparent 45%);color:var(--tx);font:14px/1.6 var(--font-body);min-height:100vh; overflow-x: hidden; width: 100%;}
+
 a{color:var(--cy);cursor:pointer;text-decoration:none}
 header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 18px;border-bottom:1px solid var(--line);background:#0a060ce8;backdrop-filter:blur(6px);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
 .logo{font:700 20px var(--font-hud);letter-spacing:.15em;color:#fff;text-shadow:0 0 12px var(--cy)}
 .logo i{color:var(--cy);font-style:normal}
-nav{display:flex;gap:4px;flex:1}nav a{padding:4px 12px;border:1px solid transparent;font:600 12px var(--font-hud);letter-spacing:.12em;color:var(--mut);text-transform:uppercase}
+
+/* 🟢 FIX 2: ทำให้ Navbar เลื่อนปัดซ้ายขวาได้บนมือถือ แทนการบีบจนตกขอบ */
+nav{display:flex;gap:4px;flex:1; overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling:touch; padding-bottom:2px; scrollbar-width:none;}
+nav::-webkit-scrollbar{display:none;}
+nav a{padding:4px 12px;border:1px solid transparent;font:600 12px var(--font-hud);letter-spacing:.12em;color:var(--mut);text-transform:uppercase}
 nav a.on,nav a:hover{border-color:var(--cy);color:var(--cy);background:#ff5fa814}
+
 select,textarea,button{font:inherit;background:#0b060d;color:var(--tx);border:1px solid var(--line);padding:6px 10px}
 button{cursor:pointer;font:600 12px var(--font-hud);letter-spacing:.1em;background:var(--cy);color:#1c0613;border:0;padding:8px 16px;transition:.2s}button:hover{box-shadow:0 0 18px #ff5fa88c;transform:translateY(-1px)}
 main{max-width:1000px;margin:0 auto;padding:20px 16px 80px;position:relative;z-index:1}
@@ -47,8 +56,8 @@ details{margin:10px 0}summary{cursor:pointer;color:var(--cy);font:600 12px var(-
 #glow{position:fixed;left:0;top:0;width:300px;height:300px;border-radius:50%;background:radial-gradient(#ff5fa81f,transparent 65%);pointer-events:none;z-index:0}
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(0deg,#ff5fa808 0 1px,transparent 1px 3px)}
 
-/* แก้ไขแถบตัวอักษรวิ่งด้านล่างให้ทำงานได้อย่างถูกต้อง */
-#tk{position:fixed;left:0;right:0;bottom:0;z-index:6;overflow:hidden;border-top:1px solid var(--line);background:#0a060cf0;backdrop-filter:blur(6px);padding:4px 0 calc(4px + env(safe-area-inset-bottom,0px));font:600 11px var(--font-hud);letter-spacing:.2em;color:var(--cy);white-space:nowrap;pointer-events:none}
+/* 🟢 FIX 4: แถบตัวอักษร Safari ลอยไม่ติดขอบ (บังคับใช้ Hardware Acceleration) */
+#tk{position:fixed;left:0;right:0;bottom:0;z-index:6;overflow:hidden;border-top:1px solid var(--line);background:#0a060cf0;backdrop-filter:blur(6px);padding:4px 0 calc(4px + env(safe-area-inset-bottom,0px));font:600 11px var(--font-hud);letter-spacing:.2em;color:var(--cy);white-space:nowrap;pointer-events:none; transform:translateZ(0);}
 #tk div{display:inline-block;animation:mq 40s linear infinite}
 @keyframes mq{to{transform:translateX(-50%)}}
 
@@ -83,13 +92,7 @@ body.locked header,body.locked main,body.locked #tk{display:none}
 .bal{height:12px;border:1px solid var(--cy);background:#050308;margin:6px 0}.bal i{display:block;height:100%;width:62%;background:linear-gradient(90deg,#ffd6ea,#fff);animation:bw 6s ease-in-out infinite alternate}@keyframes bw{to{width:68%}}
 .trow{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px dashed var(--line);cursor:pointer}.trow:hover{background:#ff5fa80f}.av.sm{width:40px;height:40px;margin:0}
 
-/* แก้ไข .fgrid ให้กลับมาแสดงผลเป็นกริดตารางคู่ (2 คอลัมน์) อย่างถูกต้อง */
-.fgrid{
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
-}
-
+.fgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(min(100%,440px),1fr))}
 .fcard{position:relative;height:260px;overflow:hidden;border:1px solid var(--line);cursor:pointer;transition:.25s}.fcard:hover{border-color:var(--cy);box-shadow:0 0 24px #ff5fa855;transform:translateY(-3px)}
 .fbi{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s}.fcard:hover .fbi{transform:scale(1.07)}
 .fov{position:absolute;inset:0;padding:16px;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(transparent 25%,#08050af2)}
@@ -168,3 +171,28 @@ a.card{display:block;color:var(--tx)}
 .wide{grid-column:1/-1}
 textarea{resize:vertical}
 @media(max-width:760px){.two{grid-template-columns:1fr}}
+
+/* =========================================================
+   🔥 MOBILE RESPONSIVE & SAFARI FIXES (ADDED) 🔥
+   ========================================================= */
+@media(max-width: 768px) {
+  /* 🟢 FIX 2 & 3: บังคับ Grid ที่เขียนฝังในโค้ด (Inline Style) ให้เหลือ 1 คอลัมน์ (แก้หน้าสร้างตัวละครล้นจอ / หน้าแรก / Studio) */
+  main div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* คืนค่าให้บางจุดของเกมที่ต้องเป็นหลายคอลัมน์เหมือนเดิม */
+  .lmnsrp-headgrid { grid-template-columns: 1fr auto !important; }
+  .icg { grid-template-columns: repeat(5, 1fr) !important; }
+  
+  /* แก้หน้า Studio ที่เผลอใช้ Flex ซ้ายขวา ให้เรียงบน-ล่างแทน */
+  main div[style*="display: flex"][style*="gap"] {
+     flex-direction: column !important;
+  }
+  
+  /* ยกเว้นให้บางคลาสยังคงเรียงแนวนอนได้ปกติ */
+  .tabs, .head, .lmnsrp-picflex, .bbt, .lg, .pb, .cdi {
+     flex-direction: row !important;
+     flex-wrap: wrap;
+  }
+}
