@@ -3,14 +3,14 @@ import Link from "next/link";
 import NavLinks from "@/components/layout/NavLinks";
 import UserBar from "@/components/layout/UserBar";
 import { NAV_ITEMS } from "@/components/layout/navItems";
-// import "../characters.css"; // ถ้าใช้ไฟล์ CSS แยก ให้เปิดบรรทัดนี้ (ถ้าวาง CSS ใน globals.css แล้ว ไม่ต้อง)
+import GlobalFX from "@/components/GlobalFX";
+import "@/app/globals.css";
 
 export default function GameLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <header>
         <div className="logo">LUMINIGHT <i>//</i> SHARDS</div>
-        {/* usePathname() เป็นข้อมูลตอน request → ต้องอยู่ใน Suspense; fallback = เมนูเดียวกันแต่ยังไม่ไฮไลต์หน้าปัจจุบัน */}
         <Suspense
           fallback={
             <nav>
@@ -26,7 +26,11 @@ export default function GameLayout({ children }: { children: React.ReactNode }) 
           <UserBar />
         </Suspense>
       </header>
-      {children}
+
+      {/* ใช้คลาส pg ตามเดิมโดยไม่ต้องพึ่ง use client ป้องกัน Error จาก session.ts */}
+      <main className="pg" style={{ maxWidth: "1020px", margin: "0 auto", width: "100%", padding: "0 16px" }}>
+        {children}
+      </main>
     </>
   );
 }

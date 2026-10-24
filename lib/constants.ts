@@ -10,4 +10,4 @@ export type StatusKey = keyof typeof STATUS;
  
 export const CHAR_TYPES = { esper: "เอสเปอร์", guide: "ไกด์" } as const;
 export const RANKS = ["S", "A", "B", "C", "D", "E", "F"] as const;
-export const STAT_LABELS = ["PSI", "STAMINA", "TALENT", "MENTAL", "SYNC", "CHARISMA"] as const;
+export const STAT_LABELS = ["STRENGTH", "AGILITY", "INTELLECT", "CHARISMA", "INTUITION", "FORTITUDE"] as const;

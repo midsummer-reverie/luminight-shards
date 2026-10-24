@@ -1,14 +1,16 @@
-import path from "node:path";
 import { defineConfig } from "drizzle-kit";
-import { config } from "dotenv";
+import * as dotenv from "dotenv";
 
-config({ path: ".env.local" });
-
-const schema = path.resolve(process.cwd(), "db", "schema.ts").replace(/\\/g, "/");
+// โหลดตัวแปรจากไฟล์ .env (ถ้าคุณใช้ .env.local ให้เปลี่ยนชื่อตรงนี้)
+dotenv.config({ path: ".env.local" });
 
 export default defineConfig({
-  dialect: "postgresql",
-  schema,
-  out: "./drizzle",
-  dbCredentials: { url: process.env.DATABASE_URL! },
+  schema: "./db/schema.ts", // 🟢 แก้ Path ตรงนี้ให้ชี้ไปที่ไฟล์ schema.ts ของคุณ
+  out: "./drizzle",             // โฟลเดอร์ที่ Drizzle จะใช้เก็บประวัติ (ถ้าไม่มีมันจะสร้างให้เอง)
+  dialect: "postgresql",        // ระบุว่าใช้ PostgreSQL (Neon)
+  dbCredentials: {
+    url: process.env.DATABASE_URL!, // ดึง Connection String จากไฟล์ .env
+  },
+  verbose: true,
+  strict: true,
 });

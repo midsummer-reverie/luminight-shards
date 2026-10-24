@@ -37,6 +37,9 @@ const pair = (t: string) => new RegExp(String.raw`\[${t}\]([\s\S]*?)\[\/${t}\]`,
 const param = (t: string, arg: string) => new RegExp(String.raw`\[${t}=${arg}\]([\s\S]*?)\[\/${t}\]`, "gi");
 
 export function renderBB(input: string): string {
+  // 🟢 ป้องกันกรณี input เป็น null, undefined หรือไม่ใช่ string
+  if (!input || typeof input !== "string") return "";
+
   let s = esc(input);
 
   // [list] ที่ไม่มี [*] → ถือว่าแต่ละบรรทัดคือหนึ่งข้อ
