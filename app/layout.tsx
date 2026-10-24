@@ -8,8 +8,9 @@ export const metadata: Metadata = {
   title: "Luminight Shards",
   description: "Guideverse RP",
   icons: {
-    icon: "https://iili.io/ne4fveV.png", // หรือใส่ URL รูปภาพ เช่น "https://example.com/icon.png"
-    apple: "https://iili.io/ne4fveV.png", // สำหรับ iOS Bookmark
+    icon: "/LMNLOGO.png",
+    shortcut: "/icon.png",
+    apple: "/LMNLOGO.png",
   },
 };
 
