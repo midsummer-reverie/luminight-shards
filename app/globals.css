@@ -336,3 +336,31 @@ textarea{resize:vertical}
     border-bottom: 1px dashed rgba(255,255,255,0.05);
   }
 }
+
+/* =========================================
+   Mobile Fix: Hamburger Overflow & Ticker Bar
+   ========================================= */
+@media (max-width: 768px) {
+  
+  /* 1. แก้ปุ่ม Hamburger ตกขอบ: ลด padding ของ header ด้านข้างลงเหลือ 10px */
+  header {
+    padding: 10px !important;
+    gap: 8px !important;
+  }
+
+  /* ลดระยะห่างด้านขวาของกล่องชื่อผู้ใช้เล็กน้อย เพื่อให้ปุ่มแฮมเบอร์เกอร์มีพื้นที่ขยับเข้าด้านใน */
+  .user-bar-container {
+    margin-right: 6px !important;
+  }
+
+  /* 2. เปลี่ยนแถบตัวอักษรวิ่งด้านล่าง (Ticker Bar) ไม่ให้ลอยติดจอ (Fixed) เฉพาะบนมือถือ */
+  #tk {
+    position: relative !important; /* ปลดล็อกจากการเกาะติดหน้าจอ */
+    bottom: auto !important;
+    width: 100% !important;
+    margin-top: 20px !important;
+    border-bottom: 1px solid var(--line);
+    /* เอา padding safe-area ออก เพราะไม่ต้องหลบแถบ Safari ด้านล่างแล้ว */
+    padding: 6px 0 !important; 
+  }
+}
