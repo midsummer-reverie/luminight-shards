@@ -137,12 +137,13 @@ export function generateLocationSvg(
   // 3. ละอองผลึก
   let crystals = "";
   for (let k = 0; k < 10; k++) {
-    const px = +rand(k + 80) * 580 + 10;
-    const py = +rand(k + 90) * 180 + 10;
-    const size = +(2 + rand(k + 100) * 5).toFixed(1);
-    const rot = +(rand(k + 110) * 180).toFixed(0);
+    const px = rand(k + 80) * 580 + 10;
+    const py = rand(k + 90) * 180 + 10;
+    const sizeNum = 2 + rand(k + 100) * 5;
+    const size = sizeNum.toFixed(1);
+    const rot = (rand(k + 110) * 180).toFixed(0);
 
-    crystals += `<path d='M0,-${size} L${size * 0.6},0 L0,${size * 1.4} L-${size * 0.6},0 Z' transform='translate(${px},${py}) rotate(${rot})' fill='${accentGlow}' opacity='0.75'/>`;
+    crystals += `<path d='M0,-${sizeNum} L${sizeNum * 0.6},0 L0,${sizeNum * 1.4} L-${sizeNum * 0.6},0 Z' transform='translate(${px},${py}) rotate(${rot})' fill='${accentGlow}' opacity='0.75'/>`;
   }
 
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 300'>

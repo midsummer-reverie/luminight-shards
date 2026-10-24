@@ -4,14 +4,14 @@ import { eq } from "drizzle-orm";
 import { getSession } from "@/lib/session";
 import StudioClient from "./StudioClient";
 
-async function StudioLoader() {
+async function StudioLoader(): Promise<React.ReactElement> {
   const session = await getSession();
   const currentUserId = session?.userId ? Number(session.userId) : 1;
 
-  let templates: any[] = [];
-  let characters: any[] = [];
-  let savedCodes: any[] = [];
-  let isAdmin = false;
+  let templates: Array<any> = [];
+  let characters: Array<any> = [];
+  let savedCodes: Array<any> = [];
+  let isAdmin: boolean = false;
 
   try {
     if (currentUserId) {
