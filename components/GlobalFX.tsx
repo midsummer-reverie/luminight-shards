@@ -8,6 +8,32 @@ export default function GlobalFX() {
   const glowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // 🟢 0. ระบบดักจับการคลิกปลดล็อกแท็ก [lock] ทั่วทั้งเว็บ
+    const handleLockClick = (e: MouseEvent) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(".lk-btn");
+      if (!btn) return;
+
+      const box = btn.closest<HTMLDivElement>(".lk-box");
+      if (!box) return;
+
+      const hasPwd = box.getAttribute("data-has-pwd") === "true";
+      const rawPass = decodeURIComponent(box.getAttribute("data-pass") || "");
+      const inp = box.querySelector<HTMLInputElement>(".lk-in");
+      const err = box.querySelector<HTMLDivElement>(".lk-err");
+      const cnt = box.querySelector<HTMLDivElement>(".lk-cnt");
+      const form = box.querySelector<HTMLDivElement>(".lk-form");
+
+      if (!hasPwd || (inp && inp.value.trim() === rawPass)) {
+        if (cnt) cnt.style.display = "block";
+        if (form) form.style.display = "none";
+        if (err) err.style.display = "none";
+      } else {
+        if (err) err.style.display = "block";
+      }
+    };
+
+    document.addEventListener("click", handleLockClick);
+
     // 1. ระบบ 3D Card Hover (ทำงานเฉพาะเมื่อเมาส์ขยับ ปลอดภัยต่อ SSR)
     document.querySelectorAll(".card").forEach((c) => {
       const card = c as HTMLElement;
@@ -93,6 +119,7 @@ export default function GlobalFX() {
     window.addEventListener("resize", rs);
 
     return () => {
+      document.removeEventListener("click", handleLockClick);
       window.removeEventListener("resize", rs);
       window.removeEventListener("click", onMouseClick);
       window.removeEventListener("mousemove", onMouseMove);
