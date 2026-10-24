@@ -61,7 +61,7 @@ export const guilds = pgTable("guilds", {
 export const locations = pgTable("locations", {
   id: serial("id").primaryKey(),
   slug: varchar("slug", { length: 40 }).notNull().unique(),
-  name: text("name").notNull(),                      
+  name: text("name").notNull(),                     
   nameJp: text("name_jp"),                           
   nameEn: text("name_en").notNull(),                 
   themeColor: text("theme_color").default("#38c8ff"),
@@ -71,7 +71,7 @@ export const locations = pgTable("locations", {
   mapY: integer("map_y"),
   bannerUrl: text("banner_url"),                     
   residentChars: jsonb("resident_chars").$type<number[]>().default([]).notNull(),             
-  parentId: integer("parent_id").references(() => locations.id, { onDelete: "cascade" }), 
+  parentId: integer("parent_id").references((): any => locations.id, { onDelete: "cascade" }),
   isMainMapZone: boolean("is_main_map_zone").default(false).notNull(), 
   sortOrder: integer("sort_order").default(0).notNull(),
   createdByUserId: integer("created_by_user_id").references(() => users.id, { onDelete: "set null" }),

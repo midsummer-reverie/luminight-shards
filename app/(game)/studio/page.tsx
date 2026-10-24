@@ -8,13 +8,12 @@ async function StudioLoader() {
   const session = await getSession();
   const currentUserId = session?.userId ? Number(session.userId) : 1;
 
-  let templates = [];
-  let characters = [];
-  let savedCodes = [];
+  let templates: any[] = [];
+  let characters: any[] = [];
+  let savedCodes: any[] = [];
   let isAdmin = false;
 
   try {
-    // 🟢 1. ตรวจสอบ Role ของผู้ใช้จาก Database โดยตรง
     if (currentUserId) {
       const [currentUser] = await db
         .select({ role: schema.users.role })
@@ -25,7 +24,6 @@ async function StudioLoader() {
       isAdmin = currentUser?.role === "admin";
     }
 
-    // 🟢 2. ดึงข้อมูลเทมเพลตและตัวละคร
     templates = await db.select().from(schema.templates).orderBy(schema.templates.id);
     
     characters = await db
@@ -33,7 +31,6 @@ async function StudioLoader() {
       .from(schema.characters)
       .where(eq(schema.characters.userId, currentUserId));
 
-    // 🟢 3. ดึงโค้ดที่เคยบันทึกไว้
     if (schema.userCodes) {
       savedCodes = await db
         .select()
