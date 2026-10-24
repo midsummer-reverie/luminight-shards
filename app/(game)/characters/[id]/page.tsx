@@ -175,7 +175,7 @@ async function Sheet({ params }: { params: Promise<{ id: string }> }) {
         
         <div className="box">
           <div className="tag">BACKGROUND</div>
-          {c.story ? <BBContent text={c.story} /> : <p>—</p>}
+          {c.story ? <BBContent content={c.story} /> : <p>—</p>}
         </div>
 
         {/* 🟢 ส่วนแสดงผลความสัมพันธ์ ปรับ UI ให้สวยงามและเรียบร้อยขึ้น */}

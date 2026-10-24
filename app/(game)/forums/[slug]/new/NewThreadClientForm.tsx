@@ -133,7 +133,7 @@ export default function NewThreadClientForm({ location }: NewThreadClientFormPro
     formData.append("locationId", location.id.toString());
     formData.append("title", title);
     formData.append("content", finalContent);
-    formData.append("templateStyle", "location"); // บังคับเป็น location
+    formData.append("templateStyle", "location");
     formData.append("bannerUrl", bannerUrl);
     formData.append("pinned", pinned ? "true" : "false");
     formData.append("locked", locked ? "true" : "false");
@@ -142,7 +142,7 @@ export default function NewThreadClientForm({ location }: NewThreadClientFormPro
 
     try {
       const res = await createThreadAction(formData);
-      if (res?.error) {
+      if (res && res.error) {
         setError(res.error);
         setLoading(false);
       }

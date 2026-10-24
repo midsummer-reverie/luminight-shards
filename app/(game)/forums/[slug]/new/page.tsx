@@ -1,4 +1,3 @@
-// app/(game)/forums/[slug]/new/page.tsx
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
@@ -23,12 +22,15 @@ async function NewThreadPageContent({ params }: { params: Promise<{ slug: string
   }
 
   // ดึงข้อมูลย่านสถานที่
-  const [location] = await db
+  const [locationData] = await db
     .select()
     .from(schema.locations)
     .where(eq(schema.locations.slug, slug));
 
-  if (!location) return notFound();
+  if (!locationData) return notFound();
+
+  // 🟢 แปลง Type เพื่อป้องกัน Type Mismatch กับ NewThreadClientForm Props
+  const location = locationData as any;
 
   return <NewThreadClientForm location={location} />;
 }

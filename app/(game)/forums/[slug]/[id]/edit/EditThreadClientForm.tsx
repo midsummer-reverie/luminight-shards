@@ -1,4 +1,3 @@
-// app/(game)/forums/[slug]/[id]/edit/EditThreadClientForm.tsx
 "use client";
 
 import { useState } from "react";
@@ -36,14 +35,18 @@ export default function EditThreadClientForm({
   const forumTheme = location?.themeColor || "#38c8ff";
   const locationSlug = location?.slug || "general";
   const rawHtml = thread?.content || "";
-  const hasMetadata = rawHtml.includes('data-zone=');
+  const hasMetadata = rawHtml.includes("data-zone=");
 
   const getMeta = (attr: string, fallback: string) => {
     if (!hasMetadata) return fallback;
     const regex = new RegExp(`data-${attr}="([^"]*)"`);
     const match = rawHtml.match(regex);
     if (match) {
-      try { return decodeURIComponent(match[1]); } catch (e) { return match[1]; }
+      try {
+        return decodeURIComponent(match[1]);
+      } catch (e) {
+        return match[1];
+      }
     }
     return fallback;
   };
@@ -60,7 +63,7 @@ export default function EditThreadClientForm({
   const [cardThemeColor, setCardThemeColor] = useState(getMeta("color1", forumTheme));
   const [picBorderColor, setPicBorderColor] = useState(getMeta("color2", "rgba(255,255,255,0.15)"));
   const [warnColor, setWarnColor] = useState(getMeta("colorwarn", "#f43f5e"));
-  
+
   const [zoneName, setZoneName] = useState(getMeta("zone", ""));
   const [riskLevel, setRiskLevel] = useState(getMeta("risk", "SAFE"));
   const [locationNameEng, setLocationNameEng] = useState(getMeta("nameeng", ""));
@@ -68,11 +71,11 @@ export default function EditThreadClientForm({
   const [coordinator, setCoordinator] = useState(getMeta("coord", ""));
   const [desc, setDesc] = useState(getMeta("desc", ""));
   const [warning, setWarning] = useState(getMeta("warn", ""));
-  
+
   const [bannerUrl, setBannerUrl] = useState(getMeta("banner", thread?.bannerUrl || ""));
   const [bgSize, setBgSize] = useState(getMeta("bgsize", "cover"));
   const [bgPosition, setBgPosition] = useState(getMeta("bgpos", "center center"));
-  
+
   const [bgZoom, setBgZoom] = useState(parseMetaNum("bgzoom", 100));
   const [bgPosX, setBgPosX] = useState(parseMetaNum("bgposx", 50));
   const [bgPosY, setBgPosY] = useState(parseMetaNum("bgposy", 50));
@@ -88,10 +91,19 @@ export default function EditThreadClientForm({
   const buildLocationHtml = () => {
     let riskBg = `${cardThemeColor}22`;
     let riskBorder = cardThemeColor;
-    if (riskLevel === "SAFE") { riskBg = "#6fe3a022"; riskBorder = "#6fe3a0"; }
-    else if (riskLevel === "CAUTION") { riskBg = "#ffd35f22"; riskBorder = "#ffd35f"; }
-    else if (riskLevel === "DANGER") { riskBg = "#ff2a6d22"; riskBorder = "#ff2a6d"; }
-    else if (riskLevel === "RESTRICTED") { riskBg = "#a78bfa22"; riskBorder = "#a78bfa"; }
+    if (riskLevel === "SAFE") {
+      riskBg = "#6fe3a022";
+      riskBorder = "#6fe3a0";
+    } else if (riskLevel === "CAUTION") {
+      riskBg = "#ffd35f22";
+      riskBorder = "#ffd35f";
+    } else if (riskLevel === "DANGER") {
+      riskBg = "#ff2a6d22";
+      riskBorder = "#ff2a6d";
+    } else if (riskLevel === "RESTRICTED") {
+      riskBg = "#a78bfa22";
+      riskBorder = "#a78bfa";
+    }
 
     const parsedDesc = renderBB(desc).replace(/\n/g, "<br/>");
     const parsedWarning = renderBB(warning).replace(/\n/g, "<br/>");
@@ -168,7 +180,7 @@ export default function EditThreadClientForm({
     formData.append("locationSlug", locationSlug);
     formData.append("title", title);
     formData.append("content", finalContent);
-    formData.append("templateStyle", "location"); // บังคับเป็น location
+    formData.append("templateStyle", "location");
     formData.append("bannerUrl", bannerUrl);
     formData.append("isPinned", pinned ? "true" : "false");
     formData.append("threadType", locked ? "password" : closed ? "closed" : "public");
@@ -176,8 +188,8 @@ export default function EditThreadClientForm({
 
     try {
       const res = await updateThreadAction(formData);
-      if (res && typeof res === "object" && "error" in res && res.error) {
-        setError(res.error as string);
+      if (res?.error) {
+        setError(res.error);
         setLoading(false);
       }
     } catch (err) {
@@ -205,14 +217,13 @@ export default function EditThreadClientForm({
           </div>
         )}
 
-        {(!hasMetadata) && (
+        {!hasMetadata && (
           <div style={{ padding: "10px 14px", background: "rgba(255, 211, 95, 0.1)", border: "1px solid #ffd35f", color: "#ffd35f", fontSize: "12px", marginBottom: "16px" }}>
             ⚠️ <b>ข้อความระบบ:</b> กระทู้นี้ใช้โครงสร้างการ์ดเวอร์ชันเก่า ข้อมูลรายละเอียดดั้งเดิมอาจไม่ถูกดึงกลับมา กรุณากรอกในช่อง BBEditor ใหม่อีกครั้งครับ
           </div>
         )}
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          
           <div>
             <label style={{ fontSize: "12px", color: "#aaa", display: "block", marginBottom: "6px" }}>หัวข้อกระทู้ (Thread Title)</label>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required style={{ width: "100%", padding: "10px 12px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "14px" }} />
@@ -236,22 +247,22 @@ export default function EditThreadClientForm({
                 <div>
                   <span style={{ fontSize: "11px", color: "#aaa" }}>สีธีมการ์ด</span>
                   <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
-                    <input type="color" value={cardThemeColor.length === 7 ? cardThemeColor : "#38c8ff"} onChange={e => setCardThemeColor(e.target.value)} style={{ width: "36px", height: "36px", padding: "0", cursor: "pointer", background: "#000", border: "1px solid #444", borderRadius: "4px" }} />
-                    <input type="text" value={cardThemeColor} onChange={e => setCardThemeColor(e.target.value)} style={{ flex: 1, padding: "8px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px" }} />
+                    <input type="color" value={cardThemeColor.length === 7 ? cardThemeColor : "#38c8ff"} onChange={(e) => setCardThemeColor(e.target.value)} style={{ width: "36px", height: "36px", padding: "0", cursor: "pointer", background: "#000", border: "1px solid #444", borderRadius: "4px" }} />
+                    <input type="text" value={cardThemeColor} onChange={(e) => setCardThemeColor(e.target.value)} style={{ flex: 1, padding: "8px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px" }} />
                   </div>
                 </div>
                 <div>
                   <span style={{ fontSize: "11px", color: "#aaa" }}>สีขอบรูปภาพ</span>
                   <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
-                    <input type="color" value={picBorderColor.length === 7 ? picBorderColor : "#ffffff"} onChange={e => setPicBorderColor(e.target.value)} style={{ width: "36px", height: "36px", padding: "0", cursor: "pointer", background: "#000", border: "1px solid #444", borderRadius: "4px" }} />
-                    <input type="text" value={picBorderColor} onChange={e => setPicBorderColor(e.target.value)} style={{ flex: 1, padding: "8px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px" }} />
+                    <input type="color" value={picBorderColor.length === 7 ? picBorderColor : "#ffffff"} onChange={(e) => setPicBorderColor(e.target.value)} style={{ width: "36px", height: "36px", padding: "0", cursor: "pointer", background: "#000", border: "1px solid #444", borderRadius: "4px" }} />
+                    <input type="text" value={picBorderColor} onChange={(e) => setPicBorderColor(e.target.value)} style={{ flex: 1, padding: "8px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px" }} />
                   </div>
                 </div>
                 <div>
                   <span style={{ fontSize: "11px", color: "#aaa" }}>สีกล่องคำเตือน</span>
                   <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
-                    <input type="color" value={warnColor.length === 7 ? warnColor : "#f43f5e"} onChange={e => setWarnColor(e.target.value)} style={{ width: "36px", height: "36px", padding: "0", cursor: "pointer", background: "#000", border: "1px solid #444", borderRadius: "4px" }} />
-                    <input type="text" value={warnColor} onChange={e => setWarnColor(e.target.value)} style={{ flex: 1, padding: "8px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px" }} />
+                    <input type="color" value={warnColor.length === 7 ? warnColor : "#f43f5e"} onChange={(e) => setWarnColor(e.target.value)} style={{ width: "36px", height: "36px", padding: "0", cursor: "pointer", background: "#000", border: "1px solid #444", borderRadius: "4px" }} />
+                    <input type="text" value={warnColor} onChange={(e) => setWarnColor(e.target.value)} style={{ flex: 1, padding: "8px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px" }} />
                   </div>
                 </div>
               </div>
@@ -260,11 +271,11 @@ export default function EditThreadClientForm({
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
               <div>
                 <span style={{ fontSize: "11px", color: "#aaa" }}>โซน (Zone Name)</span>
-                <input type="text" value={zoneName} onChange={e => setZoneName(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px", marginTop: "4px" }} />
+                <input type="text" value={zoneName} onChange={(e) => setZoneName(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px", marginTop: "4px" }} />
               </div>
               <div>
                 <span style={{ fontSize: "11px", color: "#aaa" }}>ระดับความเสี่ยง (Risk Level)</span>
-                <select value={riskLevel} onChange={e => setRiskLevel(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px", marginTop: "4px" }}>
+                <select value={riskLevel} onChange={(e) => setRiskLevel(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px", marginTop: "4px" }}>
                   <option value="SAFE">SAFE (ปลอดภัย)</option>
                   <option value="CAUTION">CAUTION (เฝ้าระวัง)</option>
                   <option value="DANGER">DANGER (อันตราย)</option>
@@ -276,32 +287,32 @@ export default function EditThreadClientForm({
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
               <div>
                 <span style={{ fontSize: "11px", color: "#aaa" }}>Location Name (ENG)</span>
-                <input type="text" value={locationNameEng} onChange={e => setLocationNameEng(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px", marginTop: "4px" }} />
+                <input type="text" value={locationNameEng} onChange={(e) => setLocationNameEng(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px", marginTop: "4px" }} />
               </div>
               <div>
                 <span style={{ fontSize: "11px", color: "#aaa" }}>ชื่อสถานที่ (THAI)</span>
-                <input type="text" value={locationNameTh} onChange={e => setLocationNameTh(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px", marginTop: "4px" }} />
+                <input type="text" value={locationNameTh} onChange={(e) => setLocationNameTh(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px", marginTop: "4px" }} />
               </div>
             </div>
 
             <div style={{ marginBottom: "12px" }}>
               <span style={{ fontSize: "11px", color: "#aaa" }}>พิกัด / เขตความดูแล (Coordinator)</span>
-              <input type="text" value={coordinator} onChange={e => setCoordinator(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px", marginTop: "4px" }} />
+              <input type="text" value={coordinator} onChange={(e) => setCoordinator(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px", marginTop: "4px" }} />
             </div>
 
             {/* 🖼️ ภาพแบนเนอร์ */}
             <div style={{ padding: "12px", background: "rgba(255,255,255,0.03)", border: "1px solid #333", marginBottom: "12px" }}>
               <div style={{ fontSize: "12px", color: cardThemeColor, fontWeight: "bold", marginBottom: "12px" }}>🖼️ ภาพหน้าปก (Banner Options)</div>
-              
+
               <div style={{ marginBottom: "16px" }}>
                 <span style={{ fontSize: "11px", color: "#aaa", display: "block", marginBottom: "4px" }}>ลิงก์รูปภาพ (URL)</span>
-                <input type="url" value={bannerUrl} onChange={e => setBannerUrl(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px" }} />
+                <input type="url" value={bannerUrl} onChange={(e) => setBannerUrl(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px" }} />
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                 <div>
                   <span style={{ fontSize: "11px", color: "#aaa" }}>ตำแหน่งภาพ (Background Position)</span>
-                  <select value={bgPosition} onChange={e => setBgPosition(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px", marginTop: "4px" }}>
+                  <select value={bgPosition} onChange={(e) => setBgPosition(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px", marginTop: "4px" }}>
                     <option value="center center">Center (กึ่งกลาง)</option>
                     <option value="top center">Top (ชิดบน)</option>
                     <option value="bottom center">Bottom (ชิดล่าง)</option>
@@ -310,11 +321,11 @@ export default function EditThreadClientForm({
                     <option value="custom">⚙️ กำหนดตำแหน่งและซูมเอง (Slider)</option>
                   </select>
                 </div>
-                
+
                 {bgPosition !== "custom" && (
                   <div>
                     <span style={{ fontSize: "11px", color: "#aaa" }}>สัดส่วนภาพ (Background Size)</span>
-                    <select value={bgSize} onChange={e => setBgSize(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px", marginTop: "4px" }}>
+                    <select value={bgSize} onChange={(e) => setBgSize(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#000", border: "1px solid #444", color: "#fff", fontSize: "12px", marginTop: "4px" }}>
                       <option value="cover">cover (เต็มกรอบ)</option>
                       <option value="contain">contain (แสดงภาพเต็ม)</option>
                       <option value="100% 100%">100% 100% (ยืดเต็ม)</option>
@@ -332,21 +343,21 @@ export default function EditThreadClientForm({
                       <span>🔍 ขนาด / ซูม (Zoom)</span>
                       <span style={{ color: cardThemeColor, fontWeight: "bold" }}>{bgZoom}%</span>
                     </div>
-                    <input type="range" min="10" max="500" value={bgZoom} onChange={e => setBgZoom(Number(e.target.value))} style={{ width: "100%", cursor: "pointer", accentColor: cardThemeColor }} />
+                    <input type="range" min="10" max="500" value={bgZoom} onChange={(e) => setBgZoom(Number(e.target.value))} style={{ width: "100%", cursor: "pointer", accentColor: cardThemeColor }} />
                   </div>
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#aaa", marginBottom: "6px" }}>
                       <span>↔️ เลื่อนแนวนอน (แกน X)</span>
                       <span style={{ color: cardThemeColor, fontWeight: "bold" }}>{bgPosX}%</span>
                     </div>
-                    <input type="range" min="0" max="100" value={bgPosX} onChange={e => setBgPosX(Number(e.target.value))} style={{ width: "100%", cursor: "pointer", accentColor: cardThemeColor }} />
+                    <input type="range" min="0" max="100" value={bgPosX} onChange={(e) => setBgPosX(Number(e.target.value))} style={{ width: "100%", cursor: "pointer", accentColor: cardThemeColor }} />
                   </div>
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#aaa", marginBottom: "6px" }}>
                       <span>↕️ เลื่อนแนวตั้ง (แกน Y)</span>
                       <span style={{ color: cardThemeColor, fontWeight: "bold" }}>{bgPosY}%</span>
                     </div>
-                    <input type="range" min="0" max="100" value={bgPosY} onChange={e => setBgPosY(Number(e.target.value))} style={{ width: "100%", cursor: "pointer", accentColor: cardThemeColor }} />
+                    <input type="range" min="0" max="100" value={bgPosY} onChange={(e) => setBgPosY(Number(e.target.value))} style={{ width: "100%", cursor: "pointer", accentColor: cardThemeColor }} />
                   </div>
                 </div>
               )}
@@ -362,10 +373,12 @@ export default function EditThreadClientForm({
           </div>
 
           <div style={{ display: "flex", gap: "20px", alignItems: "center", background: "rgba(255,255,255,0.02)", padding: "12px 16px", border: "1px solid #333", flexWrap: "wrap" }}>
-            <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#ddd", cursor: "pointer" }}>
-              <input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} />
-              📌 ปักหมุดกระทู้
-            </label>
+            {canPin && (
+              <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#ddd", cursor: "pointer" }}>
+                <input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} />
+                📌 ปักหมุดกระทู้
+              </label>
+            )}
             <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#ddd", cursor: "pointer" }}>
               <input type="checkbox" checked={locked} onChange={(e) => setLocked(e.target.checked)} />
               🔑 ล็อกด้วยรหัสผ่าน

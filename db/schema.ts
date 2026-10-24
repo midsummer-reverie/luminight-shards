@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   pgTable, pgEnum, serial, text, varchar, integer, boolean,
-  timestamp, jsonb, index, uniqueIndex, primaryKey
+  timestamp, jsonb, index, uniqueIndex, primaryKey, AnyPgColumn
 } from "drizzle-orm/pg-core";
 
 // ---------------------------------------------------------

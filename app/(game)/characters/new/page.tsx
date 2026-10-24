@@ -10,6 +10,10 @@ import StatsEditor from "@/components/character/StatsEditor";
 import BBEditor from "@/components/bbcode/BBEditor";
 import RelationshipEditor from "@/components/character/RelationshipEditor";
 
+interface PageProps {
+  searchParams: Promise<{ type?: string }>;
+}
+
 const F = ({ label, name, def, type = "text", max }: { label: string; name: string; def?: string | number | null; type?: string; max?: number }) => (
   <label className="fl">{label}<input name={name} type={type} defaultValue={def ?? ""} maxLength={max} /></label>
 );
@@ -18,12 +22,16 @@ const T = ({ label, name, def, rows = 3 }: { label: string; name: string; def?: 
 );
 const FULL = { gridColumn: "1 / -1" } as const;
 
-async function CreateForm() {
+async function CreateForm({ searchParams }: { searchParams: Promise<{ type?: string }> }) {
   // 1. ตรวจสอบ Session
   const session = await getSession();
   if (!session) redirect("/login");
 
-  // 2. ดึงข้อมูลอ้างอิงสำหรับ Dropdown ต่างๆ
+  // 2. รับค่า type จาก URL Query string (ถ้ามี)
+  const resolvedSearchParams = await searchParams;
+  const initialType = resolvedSearchParams.type === "guide" ? "guide" : "esper";
+
+  // 3. ดึงข้อมูลอ้างอิงสำหรับ Dropdown ต่างๆ
   const guilds = await db.select().from(schema.guilds).orderBy(asc(schema.guilds.id));
   const locations = await db.select().from(schema.locations).orderBy(asc(schema.locations.id));
   const allCharacters = await db
@@ -50,7 +58,7 @@ async function CreateForm() {
           <F label="ชื่อ" name="firstName" max={60} />
           <F label="นามสกุล" name="lastName" max={60} />
           <label className="fl">ประเภท
-            <select name="type" defaultValue="esper">
+            <select name="type" defaultValue={initialType}>
               <option value="esper">เอสเปอร์</option>
               <option value="guide">ไกด์</option>
             </select>
@@ -70,7 +78,7 @@ async function CreateForm() {
           <label className="fl">สถานที่ / ที่พำนักปัจจุบัน
             <select name="statusLocationId" defaultValue="">
               <option value="">— ไม่ระบุ —</option>
-              {locations.map((l) => <option key={l.id} value={l.id}>{l.jp} {l.name}</option>)}
+              {locations.map((l) => <option key={l.id} value={l.id}>{l.nameJp ?? ""} {l.name}</option>)}
             </select>
           </label>
           <F label="โน้ตสั้น" name="note" />
@@ -154,11 +162,11 @@ async function CreateForm() {
   );
 }
 
-export default async function CreateCharacterPage() {
+export default async function CreateCharacterPage({ searchParams }: PageProps) {
   return (
     <main style={{ paddingBottom: "100px", maxWidth: "1000px", margin: "0 auto", padding: "28px 20px 96px" }}>
       <Suspense fallback={<div className="mut">กำลังโหลด...</div>}>
-        <CreateForm />
+        <CreateForm searchParams={searchParams} />
       </Suspense>
     </main>
   );

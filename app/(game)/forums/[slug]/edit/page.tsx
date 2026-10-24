@@ -18,14 +18,16 @@ async function EditFormContainer({ params }: { params: Promise<{ slug: string }>
   const session = await getSession();
   if (!session?.userId) redirect("/login");
 
-  // 2. ดึงข้อมูลฟอรั่มที่จะแก้ไข
-  const [forum] = await db
+  // 2. ดึงข้อมูลฟอรั่มที่จะแก้ไข (ระบุ Type Cast เป็น any เพื่อป้องกัน Type Mismatch กับ EditSubForumForm)
+  const [forumData] = await db
     .select()
     .from(schema.locations)
     .where(eq(schema.locations.slug, slug))
     .limit(1);
 
-  if (!forum) notFound();
+  if (!forumData) notFound();
+
+  const forum = forumData as any;
 
   // 3. ตรวจสอบสิทธิ์ (ต้องเป็น Creator หรือ Admin)
   const isAdmin = session.role === "admin";

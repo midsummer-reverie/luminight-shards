@@ -1,4 +1,4 @@
-//actions/characters.ts
+// actions/characters.ts
 "use server";
 
 import { redirect } from "next/navigation";
@@ -42,23 +42,17 @@ const url = (fd: any, k: string) => {
   }
 };
 
-export async function createCharacter(type: "esper" | "guide", _fd?: FormData) {
+// 🟢 1. ปรับปรุง createCharacter ให้รับ FormData โดยตรง ป้องกัน Type Mismatch
+export async function createCharacter(fd: FormData) {
   const userId = await requireUid();
-  if (type !== "esper" && type !== "guide") return;
-  const [c] = await db.insert(characters).values({ userId, type, nameJp: "新規", firstName: "new" }).returning({ id: characters.id });
-  redirect(`/characters/${c.id}/edit`);
-}
 
-export async function updateCharacter(id: number, fd: FormData) {
-  const userId = await requireUid();
-  const nameJp = str(fd, "nameJp", 60);
-  const firstName = str(fd, "firstName", 60);
-  if (!nameJp || !firstName) redirect(`/characters/${id}/edit`);
+  const nameJp = str(fd, "nameJp", 60) || "新規";
+  const firstName = str(fd, "firstName", 60) || "new";
 
   const rankIn = str(fd, "rank", 1);
   const rank = (RANKS as readonly string[]).includes(rankIn) ? (rankIn as (typeof RANKS)[number]) : "C";
 
-  // 🟢 แปลงค่า tiesJson ที่ส่งมาจาก RelationshipEditor ให้เป็น Object Array ที่ปลอดภัย
+  // Parse tiesJson
   let parsedTies: any[] = [];
   const tiesJsonStr = getVal(fd, "tiesJson");
   if (tiesJsonStr) {
@@ -66,8 +60,8 @@ export async function updateCharacter(id: number, fd: FormData) {
       const raw = JSON.parse(tiesJsonStr);
       if (Array.isArray(raw)) {
         parsedTies = raw
-          .filter(t => t && (t.targetId || t.relation || t.note))
-          .map(t => ({
+          .filter((t) => t && (t.targetId || t.relation || t.note))
+          .map((t) => ({
             targetId: t.targetId ? Number(t.targetId) : "",
             relation: String(t.relation || "").trim().slice(0, 50),
             note: String(t.note || "").trim().slice(0, 300),
@@ -80,36 +74,116 @@ export async function updateCharacter(id: number, fd: FormData) {
 
   const statusLocationIdVal = getVal(fd, "statusLocationId");
 
-  await db.update(characters).set({
-    type: str(fd, "type") === "guide" ? "guide" : "esper",
-    guildId: Number(getVal(fd, "guildId")) || null,
-    statusLocationId: statusLocationIdVal ? Number(statusLocationIdVal) : null,
-    rank, nameJp, firstName,
-    lastName: str(fd, "lastName", 60) || null,
-    className: str(fd, "className", 60) || null,
-    note: str(fd, "note", 120) || null,
-    age: num(fd, "age", 20, 200, 20),
-    birthday: str(fd, "birthday", 20) || null,
-    heightWeight: str(fd, "heightWeight", 30) || null,
-    bloodType: str(fd, "bloodType", 10) || null,
-    mbti: str(fd, "mbti", 8).toUpperCase() || null,
-    quote: str(fd, "quote", 200) || null,
-    traits: str(fd, "traits", 300).split(",").map((x) => x.trim()).filter(Boolean).slice(0, 12),
-    
-    // 🟢 บันทึกข้อมูลความสัมพันธ์ในรูปแบบ JSON Object Array
-    ties: parsedTies,
+  const [c] = await db
+    .insert(characters)
+    .values({
+      userId,
+      type: str(fd, "type") === "guide" ? "guide" : "esper",
+      guildId: Number(getVal(fd, "guildId")) || null,
+      statusLocationId: statusLocationIdVal ? Number(statusLocationIdVal) : null,
+      rank,
+      nameJp,
+      firstName,
+      lastName: str(fd, "lastName", 60) || null,
+      className: str(fd, "className", 60) || null,
+      note: str(fd, "note", 120) || null,
+      age: num(fd, "age", 20, 200, 20),
+      birthday: str(fd, "birthday", 20) || null,
+      heightWeight: str(fd, "heightWeight", 30) || null,
+      bloodType: str(fd, "bloodType", 10) || null,
+      mbti: str(fd, "mbti", 8).toUpperCase() || null,
+      quote: str(fd, "quote", 200) || null,
+      traits: str(fd, "traits", 300)
+        .split(",")
+        .map((x) => x.trim())
+        .filter(Boolean)
+        .slice(0, 12),
+      ties: parsedTies,
+      stats: [0, 1, 2, 3, 4, 5].map((i) => num(fd, `s${i}`, 0, 100, 50)),
+      abilityName: str(fd, "abilityName", 80) || null,
+      abilityDesc: str(fd, "abilityDesc", 600) || null,
+      doomLevel: num(fd, "doomLevel", 0, 100, 0),
+      story: getVal(fd, "story").trim().slice(0, 5000) || null,
+      colorPrimary: color(fd, "colorPrimary", "#ff5fa8"),
+      imageMainUrl: url(fd, "imageMainUrl"),
+      verticalBannerUrl: url(fd, "vertical_banner_url"),
+      faceUrl: url(fd, "faceUrl"),
+    })
+    .returning({ id: characters.id });
 
-    stats: [0, 1, 2, 3, 4, 5].map((i) => num(fd, `s${i}`, 0, 100, 50)),
-    abilityName: str(fd, "abilityName", 80) || null,
-    abilityDesc: str(fd, "abilityDesc", 600) || null,
-    doomLevel: num(fd, "doomLevel", 0, 100, 0),
-    story: getVal(fd, "story").trim().slice(0, 5000) || null,
-    colorPrimary: color(fd, "colorPrimary", "#ff5fa8"),
-    imageMainUrl: url(fd, "imageMainUrl"),
-    verticalBannerUrl: url(fd, "vertical_banner_url"),
-    faceUrl: url(fd, "faceUrl"),
-    updatedAt: new Date(),
-  }).where(and(eq(characters.id, id), eq(characters.userId, userId)));
+  revalidatePath("/");
+  revalidatePath("/characters");
+  revalidatePath(`/profile/${userId}`);
+
+  redirect(`/characters/${c.id}`);
+}
+
+export async function updateCharacter(id: number, fd: FormData) {
+  const userId = await requireUid();
+  const nameJp = str(fd, "nameJp", 60);
+  const firstName = str(fd, "firstName", 60);
+  if (!nameJp || !firstName) redirect(`/characters/${id}/edit`);
+
+  const rankIn = str(fd, "rank", 1);
+  const rank = (RANKS as readonly string[]).includes(rankIn) ? (rankIn as (typeof RANKS)[number]) : "C";
+
+  let parsedTies: any[] = [];
+  const tiesJsonStr = getVal(fd, "tiesJson");
+  if (tiesJsonStr) {
+    try {
+      const raw = JSON.parse(tiesJsonStr);
+      if (Array.isArray(raw)) {
+        parsedTies = raw
+          .filter((t) => t && (t.targetId || t.relation || t.note))
+          .map((t) => ({
+            targetId: t.targetId ? Number(t.targetId) : "",
+            relation: String(t.relation || "").trim().slice(0, 50),
+            note: String(t.note || "").trim().slice(0, 300),
+          }));
+      }
+    } catch (e) {
+      console.error("Failed to parse tiesJson:", e);
+    }
+  }
+
+  const statusLocationIdVal = getVal(fd, "statusLocationId");
+
+  await db
+    .update(characters)
+    .set({
+      type: str(fd, "type") === "guide" ? "guide" : "esper",
+      guildId: Number(getVal(fd, "guildId")) || null,
+      statusLocationId: statusLocationIdVal ? Number(statusLocationIdVal) : null,
+      rank,
+      nameJp,
+      firstName,
+      lastName: str(fd, "lastName", 60) || null,
+      className: str(fd, "className", 60) || null,
+      note: str(fd, "note", 120) || null,
+      age: num(fd, "age", 20, 200, 20),
+      birthday: str(fd, "birthday", 20) || null,
+      heightWeight: str(fd, "heightWeight", 30) || null,
+      bloodType: str(fd, "bloodType", 10) || null,
+      mbti: str(fd, "mbti", 8).toUpperCase() || null,
+      quote: str(fd, "quote", 200) || null,
+      traits: str(fd, "traits", 300)
+        .split(",")
+        .map((x) => x.trim())
+        .filter(Boolean)
+        .slice(0, 12),
+      ties: parsedTies,
+      stats: [0, 1, 2, 3, 4, 5].map((i) => num(fd, `s${i}`, 0, 100, 50)),
+      abilityName: str(fd, "abilityName", 80) || null,
+      abilityDesc: str(fd, "abilityDesc", 600) || null,
+      doomLevel: num(fd, "doomLevel", 0, 100, 0),
+      story: getVal(fd, "story").trim().slice(0, 5000) || null,
+      colorPrimary: color(fd, "colorPrimary", "#ff5fa8"),
+      imageMainUrl: url(fd, "imageMainUrl"),
+      verticalBannerUrl: url(fd, "vertical_banner_url"),
+      faceUrl: url(fd, "faceUrl"),
+      updatedAt: new Date(),
+    })
+    .where(and(eq(characters.id, id), eq(characters.userId, userId)));
 
   revalidatePath("/");
   redirect(`/characters/${id}`);
@@ -117,12 +191,8 @@ export async function updateCharacter(id: number, fd: FormData) {
 
 export async function updateCharacterStatus(input: any, maybeFormData?: FormData) {
   const userId = await requireUid();
-  
-  const fd = maybeFormData instanceof FormData 
-    ? maybeFormData 
-    : input instanceof FormData 
-      ? input 
-      : input;
+
+  const fd = maybeFormData instanceof FormData ? maybeFormData : input instanceof FormData ? input : input;
 
   if (!fd) {
     console.error("updateCharacterStatus received invalid form data");
@@ -144,11 +214,12 @@ export async function updateCharacterStatus(input: any, maybeFormData?: FormData
   }
 
   if (status) {
-    updateData.status = status as any; 
+    updateData.status = status as any;
   }
 
   try {
-    await db.update(characters)
+    await db
+      .update(characters)
       .set(updateData)
       .where(and(eq(characters.id, characterId), eq(characters.userId, userId)));
   } catch (dbErr) {

@@ -4,10 +4,13 @@ import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 
 async function RedirectContent() {
-  const s = await getSession();
-  if (!s || !s.userId) redirect("/login");
-
-  redirect(`/profile/${s.userId}`);
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  } else {
+    redirect(`/profile/${session.userId}`);
+  }
+  return null; // 🟢 ใส่บรรทัดนี้เพิ่มครับ
 }
 
 export default function ProfileRedirect() {
