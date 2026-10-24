@@ -196,3 +196,143 @@ textarea{resize:vertical}
      flex-wrap: wrap;
   }
 }
+/* =========================================
+   Mobile Hamburger Dropdown Menu (Fixed Navbar)
+   ========================================= */
+
+/* ค่าเริ่มต้นบนคอม: ซ่อนปุ่มแฮมเบอร์เกอร์ */
+.hamburger-btn {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--cy);
+  padding: 6px 12px;
+  cursor: pointer;
+  font: 600 14px var(--font-hud);
+}
+
+/* กฎสำหรับจอมือถือ */
+@media (max-width: 768px) {
+  /* ล็อก Header ด้านบนให้เรียงแถวเดียวปกติ ไม่ขยายความสูงตามเมนู */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap !important;
+  }
+
+  /* แสดงปุ่มแฮมเบอร์เกอร์ */
+  .hamburger-btn {
+    display: block;
+    margin-left: 8px;
+    flex-shrink: 0;
+  }
+
+  /* ซ่อน <nav> ปกติบนมือถือ */
+  header > nav {
+    display: none !important;
+    position: absolute;
+    top: 100%; /* ให้ตกลงมาใต้ขอบ header พอดี */
+    left: 0;
+    right: 0;
+    background: #0a060cf8;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    flex-direction: column;
+    padding: 12px 16px;
+    gap: 8px;
+    z-index: 10;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+  }
+
+  /* เมื่อกดเปิด (เติมคลาส .open) เมนูจะเลื่อนกางลงมาทับด้านล่างโดยที่ Navbar หลักไม่ขยาย */
+  header > nav.open {
+    display: flex !important;
+  }
+
+  header > nav a {
+    padding: 10px 14px;
+    text-align: left;
+    width: 100%;
+    border-bottom: 1px dashed rgba(255,255,255,0.05);
+  }
+}
+/* =========================================
+   UserBar & Hamburger Positioning Fix
+   ========================================= */
+
+/* ค่าเริ่มต้นบนจอคอม: เรียงเป็นแถวแนวนอนปกติ */
+.user-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-left: auto; /* ดันทั้งหมดไปชิดขวา */
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 768px) {
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap !important;
+  }
+
+  /* 1. ให้โลโก้อยู่ซ้ายสุด */
+  .logo {
+    margin-right: auto;
+  }
+
+  /* 2. จัดกลุ่มชื่อผู้ใช้และปุ่ม Logout ให้อยู่ถัดมา (ลำดับที่ 2) */
+  .user-bar-container {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    margin-left: 0;
+    margin-right: 12px; /* เว้นระยะห่างจากปุ่มแฮมเบอร์เกอร์ริมสุด */
+    order: 2;
+  }
+
+  /* 3. ดันปุ่มแฮมเบอร์เกอร์ไปอยู่ริมขวาสุดเสมอ (ลำดับที่ 3) */
+  .hamburger-btn {
+    display: block;
+    order: 3;
+    margin-left: 0;
+    flex-shrink: 0;
+  }
+
+  /* บังคับเมนู Dropdown ให้อยู่ล่างสุดเมื่อกดเปิด */
+  header > nav {
+    display: none !important;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #0a060cf8;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    flex-direction: column;
+    padding: 12px 16px;
+    gap: 8px;
+    z-index: 10;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+    order: 4;
+  }
+
+  header > nav.open {
+    display: flex !important;
+  }
+
+  header > nav a {
+    padding: 10px 14px;
+    text-align: left;
+    width: 100%;
+    border-bottom: 1px dashed rgba(255,255,255,0.05);
+  }
+}
