@@ -4,9 +4,13 @@ import "./globals.css";
 import CanvasFX from "@/components/CanvasFX";
 import GlobalFX from "@/components/GlobalFX";
 
-export const metadata: Metadata = { 
-  title: "LUMINIGHT SHARDS", 
-  description: "Guideverse" 
+export const metadata: Metadata = {
+  title: "Luminight Shards",
+  description: "Guideverse RP",
+  icons: {
+    icon: "https://iili.io/ne4fveV.png", // หรือใส่ URL รูปภาพ เช่น "https://example.com/icon.png"
+    apple: "https://iili.io/ne4fveV.png", // สำหรับ iOS Bookmark
+  },
 };
 
 const GOOGLE_SANS = "https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght,GRAD@0,17..18,400..700,-50..200;1,17..18,400..700,-50..200&display=swap";
