@@ -42,6 +42,14 @@ const url = (fd: any, k: string) => {
   }
 };
 
+// ฟังก์ชันช่วยตรวจสอบประเภทตัวละครให้รองรับ citizen ด้วย
+const parseCharacterType = (fd: any): "esper" | "guide" | "citizen" => {
+  const t = str(fd, "type").toLowerCase();
+  if (t === "guide") return "guide";
+  if (t === "citizen") return "citizen";
+  return "esper"; // ค่าเริ่มต้น
+};
+
 // 🟢 1. ปรับปรุง createCharacter ให้รับ FormData โดยตรง ป้องกัน Type Mismatch
 export async function createCharacter(fd: FormData) {
   const userId = await requireUid();
@@ -78,7 +86,7 @@ export async function createCharacter(fd: FormData) {
     .insert(characters)
     .values({
       userId,
-      type: str(fd, "type") === "guide" ? "guide" : "esper",
+      type: parseCharacterType(fd), // 🟢 รองรับ citizen แล้ว
       guildId: Number(getVal(fd, "guildId")) || null,
       statusLocationId: statusLocationIdVal ? Number(statusLocationIdVal) : null,
       rank,
@@ -151,7 +159,7 @@ export async function updateCharacter(id: number, fd: FormData) {
   await db
     .update(characters)
     .set({
-      type: str(fd, "type") === "guide" ? "guide" : "esper",
+      type: parseCharacterType(fd), // 🟢 รองรับ citizen แล้ว
       guildId: Number(getVal(fd, "guildId")) || null,
       statusLocationId: statusLocationIdVal ? Number(statusLocationIdVal) : null,
       rank,

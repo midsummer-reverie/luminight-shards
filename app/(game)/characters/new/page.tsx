@@ -61,6 +61,7 @@ async function CreateForm({ searchParams }: { searchParams: Promise<{ type?: str
             <select name="type" defaultValue={initialType}>
               <option value="esper">เอสเปอร์</option>
               <option value="guide">ไกด์</option>
+              <option value="citizen">คนธรรมดา</option>
             </select>
           </label>
           <F label="คลาส/อาชีพ" name="className" />

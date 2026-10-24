@@ -32,7 +32,7 @@ export interface CharacterTie {
 // ---------------------------------------------------------
 // 🟢 Enums & Existing Tables
 // ---------------------------------------------------------
-export const charType = pgEnum("char_type", ["esper", "guide"]);
+export const charType = pgEnum("char_type", ["esper", "guide", "citizen"]);
 export const charRank = pgEnum("char_rank", ["S", "A", "B", "C", "D", "E", "F"]);
 export const charStatus = pgEnum("char_status", ["ready", "doom", "hurt", "mission", "rest", "root"]);
 

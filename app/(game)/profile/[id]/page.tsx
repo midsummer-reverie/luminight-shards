@@ -29,19 +29,26 @@ async function UserProfileContent({ params }: { params: Promise<{ id: string }> 
   return (
     <>
       <div className="tag">// USER PROFILE · #{profileId}</div>
-      <h2 style={{ margin: "10px 0 20px 0" }}>Character List</h2>
+      
+      {/* 🟢 ส่วนหัวข้อและย้ายปุ่มสร้างตัวละครมาไว้ตรงนี้ปุ่มเดียว */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "10px 0 20px 0" }}>
+        <h2 style={{ margin: 0 }}>Character List</h2>
+        {isOwner && (
+          <Link href="/characters/new">
+            <button className="mini" type="button">+ สร้างตัวละครใหม่</button>
+          </Link>
+        )}
+      </div>
 
-      {(["esper", "guide"] as const).map((type) => {
+      {/* 🟢 เพิ่ม "citizen" เข้าไปในหมวดหมู่การวนลูป */}
+      {(["esper", "guide", "citizen"] as const).map((type) => {
         const list = rows.filter((r) => r.c.type === type);
+        const typeLabel = CHAR_TYPES[type] || type.toUpperCase();
+
         return (
           <section key={type} style={{ marginBottom: "32px" }}>
-            <div className="tag" style={{ marginTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span>// {CHAR_TYPES[type]} · {type.toUpperCase()} ({list.length})</span>
-              {isOwner && (
-                <Link href={`/characters/new?type=${type}`}>
-                  <button className="mini" type="button">+ สร้างตัวละครใหม่</button>
-                </Link>
-              )}
+            <div className="tag" style={{ marginTop: 14 }}>
+              <span>// {typeLabel} · {type.toUpperCase()} ({list.length})</span>
             </div>
 
             <div className="grid" style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>

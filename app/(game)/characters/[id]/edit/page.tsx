@@ -72,6 +72,7 @@ async function EditForm({ params }: { params: Promise<{ id: string }> }) {
             <select name="type" defaultValue={c.type}>
               <option value="esper">เอสเปอร์</option>
               <option value="guide">ไกด์</option>
+              <option value="citizen">คนธรรมดา</option>
             </select>
           </label>
           <F label="คลาส/อาชีพ" name="className" def={c.className} />
