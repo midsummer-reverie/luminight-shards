@@ -576,7 +576,8 @@ async function ForumContent({ params }: { params: Promise<{ slug: string }> }) {
             padding: "48px 20px",
             borderRadius: "0px",
             border: `1px solid ${themeColor}44`,
-            background: "rgba(10, 10, 12, 0.85)",
+            // 🔴 เปลี่ยนจาก rgba เป็น Hex ทึบ
+            background: "#120a16", 
             color: "#a1a1aa",
             fontSize: "14px",
             letterSpacing: "0.5px",
@@ -599,7 +600,9 @@ async function ForumContent({ params }: { params: Promise<{ slug: string }> }) {
                 padding: "14px 20px",
                 borderRadius: 0,
                 border: `1px solid ${t.pinned ? themeColor : `${themeColor}44`}`,
-                background: t.pinned ? `${themeColor}12` : "rgba(10, 10, 12, 0.85)",
+                // 🔴 เปลี่ยนจาก rgba(10, 10, 12, 0.85) และ ${themeColor}12 ให้เป็นสีทึบทั้งหมด
+                // ตัวอย่าง: กระทู้ปักหมุดสีเข้มขึ้นนิดนึง, กระทู้ปกติสีดำอมม่วง
+                background: t.pinned ? "#1a0b22" : "#120a16",
                 boxShadow: t.pinned ? `0 0 12px ${themeColor}33` : "none",
               }}
             >

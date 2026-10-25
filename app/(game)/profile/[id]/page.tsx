@@ -64,7 +64,10 @@ async function UserProfileContent({ params }: { params: Promise<{ id: string }> 
                       position: "relative",
                       overflow: "hidden",
                       border: `1px solid ${c.colorPrimary}55`,
-                      background: "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.2) 100%)",
+                      
+                      // 🔴 เปลี่ยนจาก linear-gradient และ rgba เป็นสีทึบ
+                      background: "#120a16", 
+                      
                       padding: "16px",
                       borderRadius: "8px",
                       transition: "all 0.2s ease",
@@ -76,6 +79,7 @@ async function UserProfileContent({ params }: { params: Promise<{ id: string }> 
                   >
                     <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: c.colorPrimary }} />
 
+                    {/* เนื้อหาด้านในคงเดิมทั้งหมด... */}
                     <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
                       <div style={{ position: "relative" }}>
                         <Avatar url={c.faceUrl ?? c.imageMainUrl} color={c.colorPrimary} />
