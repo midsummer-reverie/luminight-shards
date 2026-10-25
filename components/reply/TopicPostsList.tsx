@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import PostRender from "./PostRender";
 
@@ -62,7 +63,7 @@ const CSS = `
   color:var(--mut,#a68c9c);background:#ffffff0d;padding:4px 12px;line-height:1.7;border-radius:2px;max-width:100%;overflow-wrap:anywhere}
 .tp-user:hover{color:var(--cc);background:color-mix(in srgb,var(--cc) 15%,transparent)}
 
-/* รายละเอียดตัวละคร: แถวสเปกแบบมีเส้นสีด้านข้าง ไม่ใช้กรอบ (ข้อความยาวขึ้นบรรทัดใหม่ได้) */
+/* รายละเอียดตัวละคร */
 .tp-hud{display:flex;flex-direction:column;gap:14px;width:100%;text-align:left}
 .tp-spec{min-width:0;padding:3px 0 3px 12px;border-left:2px solid color-mix(in srgb,var(--cc) 70%,transparent);
   background:linear-gradient(90deg,color-mix(in srgb,var(--cc) 12%,transparent),transparent 85%)}
@@ -80,7 +81,11 @@ const CSS = `
 .tp-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 24px;
   border-bottom:1px solid color-mix(in srgb,var(--tc) 30%,#1a0f1c);background:color-mix(in srgb,var(--tc) 6%,#131313);
   font:600 11px var(--font-hud,sans-serif);letter-spacing:.15em;color:var(--mut,#a68c9c)}
-.tp-head b{color:var(--tc);font-size:13px}
+
+/* 🟢 ปรับ CSS สำหรับปุ่มเลขโพสต์ */
+.tp-post-num{background:none;border:none;padding:0;color:var(--tc);font-size:13px;font-weight:bold;cursor:pointer;font-family:inherit;transition:0.2s;}
+.tp-post-num:hover{text-shadow:0 0 8px var(--tc);filter:brightness(1.2);}
+
 .tp-body{flex:1;background:#131313;padding:0;overflow:hidden}
 .tp-body::-webkit-scrollbar{display:none!important}
 .tp-body{-ms-overflow-style:none;scrollbar-width:none}
@@ -101,11 +106,23 @@ const CSS = `
 `;
 
 export default function TopicPostsList({ posts, forumThemeColor }: TopicPostsListProps) {
+  // 🟢 State สำหรับแสดงข้อความ Copied! ชั่วคราว
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+
   if (!posts || posts.length === 0) {
     return <div className="tp-empty"><style dangerouslySetInnerHTML={{ __html: CSS }} />ยังไม่มีการตอบกลับในกระทู้นี้</div>;
   }
 
   const mainThemeColor = hex(forumThemeColor || "#ff5fa8");
+
+  // 🟢 ฟังก์ชันคัดลอกลิงก์
+  const handleCopyLink = (postId: number) => {
+    const url = `${window.location.origin}${window.location.pathname}#post-${postId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedId(postId);
+      setTimeout(() => setCopiedId(null), 2000); // กลับเป็นเลขโพสต์เดิมหลังจาก 2 วินาที
+    });
+  };
 
   return (
     <div className="tp-list">
@@ -118,6 +135,7 @@ export default function TopicPostsList({ posts, forumThemeColor }: TopicPostsLis
         return (
           <div
             key={post.id}
+            id={`post-${post.id}`} // 🟢 ระบุ ID เพื่อให้ URL Anchor ใช้งานได้
             className="tp-card"
             style={{ ["--tc" as string]: mainThemeColor, ["--cc" as string]: hex(c.colorPrimary) }}
           >
@@ -157,7 +175,15 @@ export default function TopicPostsList({ posts, forumThemeColor }: TopicPostsLis
             <div className="tp-main">
               <div className="tp-head">
                 <span>// REPLY · {DATE.format(new Date(post.createdAt))}</span>
-                <b>#{String(index + 1).padStart(2, "0")}</b>
+                
+                {/* 🟢 เปลี่ยนแท็ก <b> เป็น <button> เพื่อให้กดคลิกได้ */}
+                <button 
+                  onClick={() => handleCopyLink(post.id)}
+                  className="tp-post-num"
+                  title="คัดลอกลิงก์โพสต์"
+                >
+                  {copiedId === post.id ? "COPIED!" : `#${String(index + 1).padStart(2, "0")}`}
+                </button>
               </div>
               <div className="tp-body">
                 {post.renderedHtml?.trim()
