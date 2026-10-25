@@ -217,8 +217,9 @@ export async function updateCharacterStatus(input: any, maybeFormData?: FormData
     updatedAt: new Date(),
   };
 
-  if (locationIdVal) {
-    updateData.statusLocationId = Number(locationIdVal);
+  // 🟢 แก้ไขเงื่อนไขตรงนี้: หากเลือก "0" (ไม่ระบุ) ให้บันทึกเป็น null เพื่อซ่อนจากแผนที่
+  if (locationIdVal !== "") {
+    updateData.statusLocationId = locationIdVal === "0" ? null : Number(locationIdVal);
   }
 
   if (status) {

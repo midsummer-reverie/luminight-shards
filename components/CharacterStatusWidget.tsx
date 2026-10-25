@@ -4,8 +4,9 @@
 import { useState, useEffect, useTransition, useRef } from "react";
 import { updateCharacterStatus } from "@/actions/characters";
 
-// 🟢 กำหนด id ของย่านให้ตรงกับตาราง locations ในระบบ
+// 🟢 เพิ่มตัวเลือก id: "0" สำหรับการ "ไม่ระบุ" หรือซ่อนจากแผนที่
 const LOCATIONS = [
+  { id: "0", slug: "hidden", name: "ไม่ระบุ (ซ่อนจากแผนที่)" },
   { id: "11", slug: "l1", name: "ย่านบัญชาการ" },
   { id: "6", slug: "l2", name: "ย่านกิลด์" },
   { id: "10", slug: "l3", name: "ย่านที่พักอาศัย" },
@@ -35,7 +36,7 @@ export default function CharacterStatusWidget({ initialCharacters = [] }: { init
 
   const activeChar = charsList.find((c) => String(c.id) === String(selectedId)) || charsList[0];
 
-  const [locationIdVal, setLocationIdVal] = useState<string>("1");
+  const [locationIdVal, setLocationIdVal] = useState<string>("0");
   const [statusVal, setStatusVal] = useState<string>("ready");
 
   useEffect(() => {
@@ -50,13 +51,13 @@ export default function CharacterStatusWidget({ initialCharacters = [] }: { init
 
   useEffect(() => {
     if (activeChar) {
-      // เทียบจาก statusLocationId หรือ homeText เดิม
       const matchedLoc = LOCATIONS.find(
         l => l.id === String(activeChar.statusLocationId) || 
              l.name === activeChar.homeText || 
              l.slug === activeChar.homeText
       );
-      setLocationIdVal(matchedLoc ? matchedLoc.id : LOCATIONS[0].id);
+      // 🟢 ถ้าหาไม่เจอ หรือเป็น null ให้ใช้ "0" (ไม่ระบุ)
+      setLocationIdVal(matchedLoc ? matchedLoc.id : "0");
       setStatusVal(activeChar.status || "ready");
     }
   }, [activeChar]);
@@ -105,7 +106,7 @@ export default function CharacterStatusWidget({ initialCharacters = [] }: { init
         <form onSubmit={handleSubmit}>
           <input type="hidden" name="characterId" value={activeChar.id} />
 
-          {/* Custom Dropdown สำหรับเลือกตัวละครพร้อมรูป faceUrl */}
+          {/* Custom Dropdown สำหรับเลือกตัวละคร */}
           <div style={{ position: "relative", marginBottom: "10px" }} ref={dropdownRef}>
             <div
               onClick={() => setIsOpen(!isOpen)}
@@ -210,7 +211,6 @@ export default function CharacterStatusWidget({ initialCharacters = [] }: { init
             </div>
           </div>
 
-          {/* ปุ่มปรับแต่งสถานที่ (ส่งค่าเป็น locationId ตรงกับ statusLocationId ใน schema) และ สถานะ */}
           <div className="sr" style={{ marginTop: "10px" }}>
             <select 
               name="locationId" 
