@@ -255,9 +255,12 @@ export default function StudioClient({
   
   const [studioVars, setStudioVars] = useState<Record<string, any>>({});
   const [activeBlocks, setActiveBlocks] = useState<string[]>([]);
+  
+  // 🟢 เพิ่ม State สำหรับเก็บค่าตัวแปรแยกรายบล็อก (อ้างอิงจาก Index ของ activeBlocks)
+  const [blockVars, setBlockVars] = useState<Record<string, any>[]>([]);
 
   // 📦 LocalStorage Draft System
-  const [drafts, setDrafts] = useState<{ name: string; values: any; blocks: string[] }[]>([]);
+  const [drafts, setDrafts] = useState<{ name: string; values: any; blocks: string[]; blockVars?: Record<string, any>[] }[]>([]);
   const [draftName, setDraftName] = useState("");
 
   const textareaRefs = useRef<{ [key: string]: HTMLTextAreaElement | null }>({});
@@ -271,7 +274,8 @@ export default function StudioClient({
 
   const saveDraft = () => {
     if (!draftName.trim()) return alert("กรุณาตั้งชื่อดราฟต์");
-    const updated = [{ name: draftName, values: { ...studioVars }, blocks: [...activeBlocks] }, ...drafts];
+    // 🟢 บันทึก blockVars ลงไปในดราฟต์ด้วย
+    const updated = [{ name: draftName, values: { ...studioVars }, blocks: [...activeBlocks], blockVars: [...blockVars] }, ...drafts];
     setDrafts(updated);
     localStorage.setItem("studio_drafts", JSON.stringify(updated));
     setDraftName("");
@@ -283,6 +287,7 @@ export default function StudioClient({
     if (d) {
       setStudioVars(d.values || {});
       setActiveBlocks(d.blocks || []);
+      setBlockVars(d.blockVars || []);
     }
   };
 
@@ -307,6 +312,8 @@ export default function StudioClient({
 
       setStudioVars(parsedValues.variables || {});
       setActiveBlocks(parsedValues.blocksLayout || []);
+      // 🟢 โหลด blockVars จาก DB
+      setBlockVars(parsedValues.blockVars || []);
     }
   }, [selectedSavedCodeId, savedCodes]);
 
@@ -326,6 +333,7 @@ export default function StudioClient({
     });
     setStudioVars(initial);
     setActiveBlocks([]);
+    setBlockVars([]); // รีเซ็ตตัวแปรบล็อกเมื่อเปลี่ยนเทมเพลตใหม่
   }, [activeTemplate, selectedSavedCodeId]);
 
   const toggleCharacter = (id: number) => {
@@ -359,7 +367,8 @@ export default function StudioClient({
       templateId: Number(selectedTemplateId),
       customName,
       characterIds: selectedChars,
-      studioValuesJson: { variables: studioVars, blocksLayout: activeBlocks }
+      // 🟢 บันทึก blockVars ลงไปใน JSON ด้วย
+      studioValuesJson: { variables: studioVars, blocksLayout: activeBlocks, blockVars }
     };
 
     try {
@@ -381,36 +390,65 @@ export default function StudioClient({
   const previewHtml = useMemo(() => {
     if (!activeTemplate) return "<div style='color:#a78bfa; text-align:center; padding:40px;'>เลือกเทมเพลตเพื่อดูพรีวิว</div>";
 
+    let baseHtml = activeTemplate.htmlContent;
     const dummyPostValues: any = { variables: {}, blocksData: {} };
+
+    // 1. จัดการตัวแปรหลัก (Post Variables)
     activeTemplate.schemaJson?.postVariables?.forEach((v: any) => {
       dummyPostValues.variables[v.name] = `(จำลอง) ${v.label}`;
     });
 
-    activeBlocks.forEach((blockId, index) => {
-      const blockInstanceId = `${blockId}_${index}`;
-      dummyPostValues.blocksData[blockInstanceId] = {};
-      const blockDef = activeTemplate.schemaJson?.blocks?.find((b: any) => b.id === blockId);
-      blockDef?.postVariables?.forEach((v: any) => {
-        dummyPostValues.blocksData[blockInstanceId][v.name] = `(บล็อก) ${v.label}`;
-      });
-    });
-
+    // 2. จัดการตัวแปรดีไซน์ (Studio Variables)
     const processedStudioVars = { ...studioVars };
     activeTemplate.schemaJson?.studioVariables?.forEach((v: any) => {
       if (v.type === 'image' || v.type === 'image_url') {
         const imgData = makeImg(studioVars[v.name]);
-        // 🟢 ส่งออกคำสั่ง CSS เต็มรูปแบบ url('...') pos / size repeat
         processedStudioVars[v.name] = imgData.url ? imgToCss(imgData) : '';
       }
     });
 
+    // 🟢 3. จัดเตรียม HTML ของ Dynamic Blocks
+    // เก็บโค้ด HTML ของบล็อกโดยแยกตามชื่อ Placeholder (เช่น "{{BLOCK}}")
+    const blockHtmlGroups: Record<string, string[]> = {};
+
+    activeBlocks.forEach((blockId, index) => {
+      const blockDef = activeTemplate.schemaJson?.blocks?.find((b: any) => b.id === blockId);
+      if (!blockDef) return;
+
+      const placeholder = blockDef.placeholder || "{{BLOCK}}";
+      if (!blockHtmlGroups[placeholder]) blockHtmlGroups[placeholder] = [];
+
+      let currentBlockHtml = blockDef.html || "";
+
+      // แทนที่ตัวแปร [[...]] ภายในบล็อกนี้
+      blockDef.postVariables?.forEach((v: any) => {
+        const actualVal = blockVars[index]?.[v.name];
+        const valToDisplay = (actualVal !== undefined && actualVal !== "") 
+          ? actualVal 
+          : `(บล็อก) ${v.label}`;
+        
+        // แทนที่คำว่า [[ตัวแปร]] ด้วยค่าที่กรอก
+        currentBlockHtml = currentBlockHtml.split(`[[${v.name}]]`).join(valToDisplay);
+      });
+
+      // นำ HTML ที่แทนที่ตัวแปรแล้ว ไปต่อคิวในกลุ่มของ Placeholder นั้น
+      blockHtmlGroups[placeholder].push(currentBlockHtml);
+    });
+
+    // 🟢 4. นำ HTML ของบล็อกทั้งหมด ไปแทนที่ในโครงสร้างหลัก
+    Object.keys(blockHtmlGroups).forEach((placeholder) => {
+      const combinedHtml = blockHtmlGroups[placeholder].join('\n'); // เอาโค้ดมาต่อกัน
+      baseHtml = baseHtml.split(placeholder).join(combinedHtml); // ไปแทนที่ใน baseHtml
+    });
+
+    // 5. ส่งให้ template engine ประมวลผลขั้นสุดท้าย (พวกสี, ฟอนต์, รูปภาพ)
     return renderTemplate(
-      activeTemplate.htmlContent, 
+      baseHtml, 
       activeTemplate.schemaJson, 
-      { variables: processedStudioVars, blocksLayout: activeBlocks.map((b,i)=>`${b}_${i}`) }, 
+      { variables: processedStudioVars, blocksLayout: [] }, 
       dummyPostValues
     );
-  }, [activeTemplate, studioVars, activeBlocks]);
+  }, [activeTemplate, studioVars, activeBlocks, blockVars]);
 
   return (
     <div className="studio-wrapper">
@@ -569,7 +607,11 @@ export default function StudioClient({
                 <h3 style={{ margin: '0 0 16px 0', fontSize: '1rem', color: '#c084fc' }}>🧱 เพิ่มส่วนเสริม</h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
                   {activeTemplate.schemaJson?.blocks?.map((b: any) => (
-                    <button key={b.id} onClick={() => setActiveBlocks([...activeBlocks, b.id])} className="btn-secondary">+ {b.name}</button>
+                    <button key={b.id} onClick={() => {
+                      setActiveBlocks([...activeBlocks, b.id]);
+                      // 🟢 เพิ่มตัวแปรบล็อกว่างๆ ลงใน Array พร้อมกับการสแปมบล็อกใหม่
+                      setBlockVars([...blockVars, {}]);
+                    }} className="btn-secondary">+ {b.name}</button>
                   ))}
                 </div>
                 {activeBlocks.length > 0 && (
@@ -577,23 +619,82 @@ export default function StudioClient({
                     {activeBlocks.map((blockId, index) => {
                       const b = activeTemplate.schemaJson.blocks.find((x:any)=>x.id===blockId);
                       return (
-                        <div key={index} style={{ background: 'rgba(168,85,247,0.1)', padding: '8px 12px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: '0.85rem', color: '#d8b4fe' }}>#{index + 1} {b?.name}</span>
-                          <div style={{ display: 'flex', gap: 4 }}>
-                            <button className="tool-btn" onClick={() => {
-                              if (index === 0) return;
-                              const arr = [...activeBlocks];
-                              [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
-                              setActiveBlocks(arr);
-                            }}>⬆️</button>
-                            <button className="tool-btn" onClick={() => {
-                              if (index === activeBlocks.length - 1) return;
-                              const arr = [...activeBlocks];
-                              [arr[index + 1], arr[index]] = [arr[index], arr[index + 1]];
-                              setActiveBlocks(arr);
-                            }}>⬇️</button>
-                            <button onClick={() => setActiveBlocks(activeBlocks.filter((_, i) => i !== index))} style={{ background: 'transparent', border: 'none', color: '#fca5a5', cursor: 'pointer' }}>✕</button>
+                        <div key={index} style={{ background: 'rgba(168,85,247,0.1)', padding: '8px 12px', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.85rem', color: '#d8b4fe' }}>#{index + 1} {b?.name}</span>
+                            <div style={{ display: 'flex', gap: 4 }}>
+                              {/* 🟢 สลับตำแหน่งตัวแปรใน blockVars ให้ตรงกับการกดเลื่อนขึ้นลงด้วย */}
+                              <button className="tool-btn" onClick={() => {
+                                if (index === 0) return;
+                                const arr = [...activeBlocks];
+                                const varsArr = [...blockVars];
+                                [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
+                                [varsArr[index - 1], varsArr[index]] = [varsArr[index], varsArr[index - 1]];
+                                setActiveBlocks(arr);
+                                setBlockVars(varsArr);
+                              }}>⬆️</button>
+                              <button className="tool-btn" onClick={() => {
+                                if (index === activeBlocks.length - 1) return;
+                                const arr = [...activeBlocks];
+                                const varsArr = [...blockVars];
+                                [arr[index + 1], arr[index]] = [arr[index], arr[index + 1]];
+                                [varsArr[index + 1], varsArr[index]] = [varsArr[index], varsArr[index + 1]];
+                                setActiveBlocks(arr);
+                                setBlockVars(varsArr);
+                              }}>⬇️</button>
+                              <button onClick={() => {
+                                setActiveBlocks(activeBlocks.filter((_, i) => i !== index));
+                                setBlockVars(blockVars.filter((_, i) => i !== index));
+                              }} style={{ background: 'transparent', border: 'none', color: '#fca5a5', cursor: 'pointer' }}>✕</button>
+                            </div>
                           </div>
+
+                          {/* 🟢 สร้างช่องรับข้อมูลตัวแปรประจำบล็อก */}
+                          {b?.postVariables && b.postVariables.length > 0 && (
+                            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '6px', marginTop: '4px' }}>
+                              {b.postVariables.map((v: any) => (
+                                <div key={v.name} style={{ marginBottom: '8px' }}>
+                                  <label style={{ display: 'block', fontSize: '0.75rem', color: '#cbd5e1', marginBottom: '4px' }}>{v.label}</label>
+                                  {v.type === 'dropdown' ? (
+                                    <select 
+                                      className="glass-input" 
+                                      style={{ padding: '6px 10px', fontSize: '0.8rem' }}
+                                      value={blockVars[index]?.[v.name] || ''}
+                                      onChange={(e) => {
+                                        const newVars = [...blockVars];
+                                        if(!newVars[index]) newVars[index] = {};
+                                        newVars[index][v.name] = e.target.value;
+                                        setBlockVars(newVars);
+                                      }}
+                                    >
+                                      <option value="">- เลือก -</option>
+                                      {v.options?.split(',').map((opt: string) => {
+                                        const parts = opt.split('=');
+                                        const label = parts[0].trim();
+                                        const val = parts.length > 1 ? parts[1].trim() : label;
+                                        return <option key={val} value={val}>{label}</option>
+                                      })}
+                                    </select>
+                                  ) : (
+                                    <input 
+                                      type="text" 
+                                      className="glass-input" 
+                                      style={{ padding: '6px 10px', fontSize: '0.8rem' }}
+                                      placeholder="ระบุค่า..."
+                                      value={blockVars[index]?.[v.name] || ''}
+                                      onChange={(e) => {
+                                        const newVars = [...blockVars];
+                                        if(!newVars[index]) newVars[index] = {};
+                                        newVars[index][v.name] = e.target.value;
+                                        setBlockVars(newVars);
+                                      }}
+                                    />
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
                         </div>
                       )
                     })}

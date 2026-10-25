@@ -269,6 +269,32 @@ export default function CreateTemplatePage() {
                 <label className="form-label">HTML</label>
                 <textarea className="glass-input code-area" style={{ height: '80px' }} value={block.html} onChange={(e) => updateBlock(bIndex, "html", e.target.value)} />
               </div>
+
+              {/* 🟢 ส่วนที่เพิ่มเข้ามาใหม่: จัดการตัวแปรย่อยภายใน Block */}
+              <div className="form-group" style={{ marginTop: '20px', borderTop: '1px dashed rgba(192, 132, 252, 0.4)', paddingTop: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <label className="form-label" style={{ margin: 0, color: '#c084fc' }}>ตัวแปรเฉพาะบล็อกนี้ (Block Variables)</label>
+                  <button onClick={() => addBlockVar(bIndex)} className="btn-add" style={{ padding: '4px 10px', fontSize: '0.75rem', borderColor: '#c084fc', color: '#c084fc' }}>+ เพิ่มตัวแปรบล็อก</button>
+                </div>
+
+                {block.postVariables.map((v, vIndex) => (
+                  <div key={vIndex} className="var-row" style={{ background: 'rgba(0, 0, 0, 0.2)', borderColor: 'rgba(192, 132, 252, 0.15)' }}>
+                    <input placeholder="ป้ายกำกับ" className="glass-input var-input" value={v.label} onChange={(e) => updateBlockVar(bIndex, vIndex, "label", e.target.value)} />
+                    <input placeholder="ตัวแปร" className="glass-input var-input" style={{ color: '#e9d5ff' }} value={v.name} onChange={(e) => updateBlockVar(bIndex, vIndex, "name", e.target.value)} />
+                    <select className="glass-input" style={{ width: 'auto' }} value={v.type} onChange={(e) => updateBlockVar(bIndex, vIndex, "type", e.target.value)}>
+                      <option value="text">Text</option>
+                      <option value="bbcode">BBCode</option>
+                      <option value="dropdown">Dropdown</option>
+                    </select>
+                    <button onClick={() => removeBlockVar(bIndex, vIndex)} className="btn-remove">✕</button>
+                    
+                    {v.type === 'dropdown' && (
+                      <input placeholder="ระบุตัวเลือก เช่น: ตัวเลือก1=1, ตัวเลือก2=2" className="glass-input options-input" style={{ borderColor: 'rgba(192, 132, 252, 0.3)' }} value={v.options || ""} onChange={(e) => updateBlockVar(bIndex, vIndex, "options", e.target.value)} />
+                    )}
+                  </div>
+                ))}
+                {block.postVariables.length === 0 && <div className="empty-text" style={{ padding: '12px', fontSize: '0.8rem' }}>ยังไม่มีตัวแปรในบล็อกนี้</div>}
+              </div>
             </div>
           ))}
           {blocks.length === 0 && <div className="empty-text">ไม่มีบล็อกส่วนเสริม</div>}
