@@ -158,8 +158,8 @@ async function GuildDetailContent({ params }: PageProps) {
       {Object.keys(classGroups).length > 0 ? (
         Object.entries(classGroups).map(([cls, groupMembers]) => (
           <div key={cls} className="box">
-            <div className="tag">// CLASS: {cls.toUpperCase()}</div>
-            <h3 style={{ margin: "4px 0 16px", color: "#fff" }}>สังกัดสาย {cls.toUpperCase()}</h3>
+            <div className="tag">// MEMBER LIST</div>
+            <h3 style={{ margin: "4px 0 16px", color: "#fff" }}>✧ CLASS — {cls.toUpperCase()}</h3>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: "16px" }}>
               {groupMembers.map((m) => (
